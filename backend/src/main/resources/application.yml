@@ -1,0 +1,61 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: fintrack-backend
+  
+  datasource:
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/fintrack}
+    username: ${DATABASE_USER:postgres}
+    password: ${DATABASE_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
+  
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,metrics,prometheus,info
+  endpoint:
+    health:
+      show-details: always
+
+# Custom App Security & Service Settings
+fintrack:
+  security:
+    jwt:
+      secret: ${JWT_SECRET:407A4672567834981273918237192837192837192837192837192837192837192837192837192837192837192837192}
+      access-expiration-ms: 3600000 # 1 hour
+      refresh-expiration-ms: 604800000 # 7 days
+    webhook:
+      api-key-header: X-FINTRACK-API-KEY
+  telegram:
+    bot-token: ${TELEGRAM_BOT_TOKEN:placeholder_token}
+    chat-id: ${TELEGRAM_CHAT_ID:placeholder_chat_id}
+  gemini:
+    api-key: ${GEMINI_API_KEY:}
+    api-url: https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent

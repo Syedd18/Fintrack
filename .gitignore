@@ -1,0 +1,15 @@
+.idea/
+.vscode/
+*.class
+*.log
+.DS_Store
+Thumbs.db
+node_modules/
+.next/
+out/
+build/
+bin/
+target/
+*.apk
+*.keystore
+local.properties
