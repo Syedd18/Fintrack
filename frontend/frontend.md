@@ -1,91 +1,209 @@
-# FinTrack AI — Premium Fintech Workspace Frontend
+# FinTrack AI — Complete Frontend Architecture & Specification
 
-This documentation details the premium, human-centric redesign of the FinTrack AI Next.js web application frontend. The platform has been completely rebuilt to reflect design systems comparable to products built by Apple, Stripe, Ramp, and Monzo designers, removing all cyberpunk glowing borders and technical jargon.
+This document provides a comprehensive technical overview and code walkthrough of the **FinTrack AI Web Dashboard & Native Mobile Frontend**. 
+
+The frontend is built on a modern **Next.js 15 App Router** architecture integrated with **Capacitor 8** hybrid mobile wrappers. It features a bespoke, premium design system designed for personal finance tracking, native biometrics integration, and developer telemetry tooling.
 
 ---
 
-## 🎨 Design System & Visual Style
+## 🏗️ Technical Architecture & Stack
 
-### Color Theme Configuration
-The UI is styled using a luxurious, comfortable, and warm palette defined in [globals.css](file:///c:/Users/acer/.gemini/antigravity-ide/scratch/fintrack-ai/frontend/src/app/globals.css):
-- **Base Canvas Background**: Deep Charcoal (`#111827`)
-- **Card Containers**: Warm Navy (`#1F2937`)
-- **Primary Text**: Warm White (`#FCFBF8`)
-- **Muted Labels**: Soft Beige (`#F8F5F1`) and Muted Sage (`#A8B5A2`)
-- **Interactive Details & Highlights**: Warm Gold (`#C9A76A`)
-- **Visual Alert States**:
-  - Success / Safe Zone: Sage (`#4F7A5B`)
-  - Warning / Watch List: Gold (`#C9964B`)
-  - Danger / Over Budget: Terracotta (`#B85C4D`)
+The frontend runs a hybrid web/native architecture targeting web browsers as well as iOS and Android devices through native runtime mappings.
+
+### Core Frameworks
+* **React 19 & Next.js 15 (App Router)**: Utilizing React Server/Client Component isolation. All routing, view state management, and page transitions are handled client-side (`"use client"`) to support offline-first Capacitor execution.
+* **Capacitor 8**: Wraps the compiled Next.js static output (`out/`) inside a native WebView container for Android and iOS, mapping web APIs to native OS SDK bindings.
+* **TypeScript**: Fully typed schema models for Transactions, Budgets, Saving Goals, API credentials, and Webhook Payloads.
+
+### Auxiliary Libraries
+* **Lucide Icons**: Consistent, modern financial and system glyphs.
+* **Recharts**: Lightweight SVG charts used to display weekly cash flows and category budget analytics.
+* **Capgo Native Biometric (`@capgo/capacitor-native-biometric`)**: Interfaces directly with Android BiometricPrompt and iOS LocalAuthentication (Face ID / Touch ID).
+* **Capacitor Core Plugins**: Handles device telemetry (Haptics, Keyboards, Status Bar configurations, and Push Notification registry).
+
+---
+
+## 🎨 Design System & Theming
+
+The user interface follows a warm, high-contrast palette. All cyberpunk glowing elements, neon text, and hacker-themed components have been replaced with solid cards, refined borders, and human-centric feedback states.
+
+### Palette Tokens
+Defined inside [globals.css](file:///C:/Users/acer/.gemini/antigravity-ide/scratch/fintrack-ai/frontend/src/app/globals.css):
+* **Canvas Background**: Deep Charcoal (`#111827` / HSL values for dark mode toggle)
+* **Containers & Cards**: Warm Navy / Slate (`#1F2937`)
+* **Primary Text**: Warm Off-White (`#FCFBF8`)
+* **Muted Text / Labels**: Soft Beige (`#F8F5F1`) & Muted Sage (`#A8B5A2`)
+* **Accents & Highlights**: Premium Gold (`#C9A76A`)
+* **Status Colors**:
+  * *Success / Target Reached*: Safe Sage (`#4F7A5B`)
+  * *Warning / Limit Approaching*: Amber Gold (`#C9964B`)
+  * *Alert / Exceeded Limit*: Terracotta (`#B85C4D`)
 
 ### Layout Constraints
-- Adheres to a strict **12-column grid** on desktop screen sizes with generous padding and container spacing to let elements breathe.
-- All glassmorphism glows, neon lines, and hacker terminal outputs have been replaced by solid slate borders (`rgba(252, 251, 248, 0.08)`) and soft cards elevations.
+* **Grid**: Strict **12-column layouts** for desktop viewports, downscaling to single-column card flows on mobile devices.
+* **Glassmorphism Reductions**: Borders use solid thin divider styling (`rgba(252, 251, 248, 0.08)`) and high-end drop shadows (`shadow-sm`) for structural elevation instead of neon glow offsets.
+* **Animations**: Pure CSS micro-interactions, scale-in, slide-up, and fade-in keyframes used to create immediate response loops for UI interactions.
 
 ---
 
 ## 📂 Source Code Map
 
-Key codebase coordinates:
-- [package.json](file:///c:/Users/acer/.gemini/antigravity-ide/scratch/fintrack-ai/frontend/package.json) — Specifies library configurations. Runs React 19, Next.js 15, Recharts, and Lucide Icons.
-- [tailwind.config.js](file:///c:/Users/acer/.gemini/antigravity-ide/scratch/fintrack-ai/frontend/tailwind.config.js) — Incorporates color mappings.
-- [src/app/globals.css](file:///c:/Users/acer/.gemini/antigravity-ide/scratch/fintrack-ai/frontend/src/app/globals.css) — Maps design variables and styling utility classes (`.fin-card`, `.fin-input`, `.badge-gold`, `.badge-sage`).
-- [src/app/page.tsx](file:///c:/Users/acer/.gemini/antigravity-ide/scratch/fintrack-ai/frontend/src/app/page.tsx) — Handles the layout viewport toggles, rendering tabs dynamically, webhook simulator posts, and API key token generation logic.
+All key project files are organized as follows:
+
+* [package.json](file:///C:/Users/acer/.gemini/antigravity-ide/scratch/fintrack-ai/frontend/package.json) — Registers dependencies, Capacitor plug-ins, and build configurations.
+* [capacitor.config.ts](file:///C:/Users/acer/.gemini/antigravity-ide/scratch/fintrack-ai/frontend/capacitor.config.ts) — Configures native Android/iOS bundling targets, WebView behaviors, and Android build settings.
+* [tailwind.config.js](file:///C:/Users/acer/.gemini/antigravity-ide/scratch/fintrack-ai/frontend/tailwind.config.js) — Declares color palette mapping and typography sizes.
+* [src/app/globals.css](file:///C:/Users/acer/.gemini/antigravity-ide/scratch/fintrack-ai/frontend/src/app/globals.css) — Custom global CSS tokens, component utility definitions (`.fin-card`, `.fin-input`, `.badge-gold`), dark mode overrides, and system keyframe animations.
+* [src/app/layout.tsx](file:///C:/Users/acer/.gemini/antigravity-ide/scratch/fintrack-ai/frontend/src/app/layout.tsx) — Main layout wrapper supplying site metadata and viewport setups.
+
+### Pages & View Routing
+* [src/app/page.tsx](file:///C:/Users/acer/.gemini/antigravity-ide/scratch/fintrack-ai/frontend/src/app/page.tsx) — Interactive Mobile Launch landing page with custom intro slide presentation.
+* [src/app/login/page.tsx](file:///C:/Users/acer/.gemini/antigravity-ide/scratch/fintrack-ai/frontend/src/app/login/page.tsx) — Log-in panel with email/password logic, social single sign-on simulations, and Capacitor biometrics handler.
+* [src/app/signup/page.tsx](file:///C:/Users/acer/.gemini/antigravity-ide/scratch/fintrack-ai/frontend/src/app/signup/page.tsx) — Register UI workspace page.
+* [src/app/forgot-password/page.tsx](file:///C:/Users/acer/.gemini/antigravity-ide/scratch/fintrack-ai/frontend/src/app/forgot-password/page.tsx) — Forgot password recovery form.
+* [src/app/onboarding/page.tsx](file:///C:/Users/acer/.gemini/antigravity-ide/scratch/fintrack-ai/frontend/src/app/onboarding/page.tsx) — Step-by-step setup onboarding wizard (Name input, Device pairing token, Budget target limits, Savings targets).
+* [src/app/verify/page.tsx](file:///C:/Users/acer/.gemini/antigravity-ide/scratch/fintrack-ai/frontend/src/app/verify/page.tsx) — Device connection / multi-factor verification check.
+* [src/app/success/page.tsx](file:///C:/Users/acer/.gemini/antigravity-ide/scratch/fintrack-ai/frontend/src/app/success/page.tsx) — Setup confirmation success landing screen.
+* [src/app/app/page.tsx](file:///C:/Users/acer/.gemini/antigravity-ide/scratch/fintrack-ai/frontend/src/app/app/page.tsx) — **The Core Workspace Dashboard**. Houses the entire authenticated multi-tab experience.
 
 ---
 
-## 🎛️ Responsive Workspace Views
+## 📱 User Onboarding & Gates
 
-The layout adaptively transforms based on user display viewports or simulation triggers:
+The platform provides a secure, friction-free gateway onboarding checklist before letting the client access the ledger.
 
-### 1. Desktop Mode (Sidebar Navigation)
-Presents the full financial commander:
-- **Sidebar Menu**: Pinned navigation featuring a warm navy theme (`#1F2937`), custom premium upgrade widgets, and clean access links.
-- **Executive Command Center**:
-  - Greets users with human-centric messages (e.g., *"Good Evening, Rizvi"*).
-  - Highlights Net Balance, Monthly Spends, and Savings Rate in minimalist banking-card blocks.
-  - **Spending Analytics Chart**: Prioritizes insights first (*"You spent most during weekends"*), followed by clean weekly bar charts in muted gold/sage.
-  - **Apple Wallet Transaction Ledger**: Transaction items display merchant initial circles, merchant name, category badges, spent sums, and post-transaction balances.
-  - **Financial Coach**: Chat-style conversational recommendations outlining budget safety thresholds and savings tips.
-- **Transaction Pipeline Monitor**: Registers logs and relay gateway checks.
-- **Device Access Center**: Manages handshake connection endpoints and secure client token checksums in plain English.
+```mermaid
+graph TD
+    A[Launch Experience / page.tsx] -->|Intro Slides| B[Welcome Screen]
+    B -->|Get Started| C[Signup Form / signup]
+    B -->|Sign In| D[Login Panel / login]
+    D -->|Biometrics / Face ID| E{Auth Exists?}
+    C -->|Next| F[Onboarding Wizard / onboarding]
+    E -->|No Settings| F
+    E -->|Has Settings| G[Main App Workspace / app]
+    F -->|Step 1: Name| H[Step 2: Generate Pairing Key]
+    H -->|Step 3: Monthly Budget| I[Step 4: Create Savings Goal]
+    I -->|Step 5: Done| G
+```
 
-### 2. Mobile Mode (Bottom Tab Navigation)
-Maintains single-thumb click targets and clean spacing:
-- **Workspace (Home)**: Shows balance estimate indicators, SVG daily spend progress rings, secure vault status cards, and the Apple Wallet transaction log.
-- **Planner (Ledger)**: Hosts budget indicators (Safe, Watch, Alert categories) and liquidity trends.
-- **Simulator**: Forms to test SMS relayer webhook payloads.
-- **Access**: Puts active key checklists and device registrations in a simple layout.
+### 1. Interactive Presentation Screen
+Defined in [page.tsx](file:///C:/Users/acer/.gemini/antigravity-ide/scratch/fintrack-ai/frontend/src/app/page.tsx), it serves as a dynamic, slide-based introduction detailing:
+* Real-time automated bank SMS intercepts (with animations showing raw text translation to structured transaction ledger cards).
+* The AI Copilot Financial Coach chat preview.
+* Goals and budgets tracking bars with visual progress percentages.
+
+### 2. Login & Native Biometric authentication
+Located in [login/page.tsx](file:///C:/Users/acer/.gemini/antigravity-ide/scratch/fintrack-ai/frontend/src/app/login/page.tsx):
+* In standard browsers: Runs a high-fidelity visual biometric simulator overlay demonstrating a Face ID scanner status checking state.
+* On native mobile platforms: Validates physical hardware presence via `NativeBiometric.isAvailable()`. If supported, prompts the native OS Face ID or fingerprint biometric UI. Upon verification, sets authentication credentials locally and grants access to `/app`.
+
+### 3. Setup Onboarding Wizard
+In [onboarding/page.tsx](file:///C:/Users/acer/.gemini/antigravity-ide/scratch/fintrack-ai/frontend/src/app/onboarding/page.tsx):
+1. **User Profile**: Welcomes the user and records their display name.
+2. **Device Pairing**: Auto-generates a secure device-linking token (`ft_pair_...`) matching the backend client expectations.
+3. **Monthly Budgeting**: Standard range slide input to specify absolute expenditure ceilings.
+4. **Target Allocation**: Initializes the user's primary savings goal by mapping description strings, targets, and emojis.
+5. **Success Route**: Completes synchronization and transfers configurations into `localStorage` before routing to `/app`.
 
 ---
 
-## 🛠️ Interactive Usables (Functional Features)
+## 🎛️ Primary Workspace Dashboard
 
-The redesigned frontend contains fully operational UI logic and client-side state hooks for interactive verification:
+The core dashboard inside [app/page.tsx](file:///C:/Users/acer/.gemini/antigravity-ide/scratch/fintrack-ai/frontend/src/app/app/page.tsx) handles all transaction views, AI interactions, and dev telemetry features. It shifts layout dynamically based on target viewport boundaries.
 
-### 1. Viewport Simulator Override
-- Located in the floating control panel at the top-right corner.
-- **Responsive**: Auto-scales dynamically via Tailwind media breakpoints.
-- **Desktop View**: Force-renders the complete sidebar, greeting cards, analytics chart, and detailed list grids.
-- **Mobile View**: Force-renders the Apple Wallet mobile canvas, circular SVG indicators, and thumb-friendly bottom capsule navigation.
+```text
+Dashboard Layout Structure
+┌────────────────────────────────────────────────────────┐
+│  Desktop Mode (Sidebar Layout)                         │
+│  ┌───────────┐┌──────────────────────────────────────┐ │
+│  │ Navigation││  Main View Canvas                    │ │
+│  │           ││  [Home / Activity / Coach / Goals]  │ │
+│  │           │├──────────────────────────────────────┤ │
+│  │           ││  Developer Tools / Diagnostic Logs   │ │
+│  │           ││  [Webhook Simulator / Key Manager]   │ │
+│  └───────────┘└──────────────────────────────────────┘ │
+└────────────────────────────────────────────────────────┘
+┌────────────────────────────────────────────────────────┐
+│  Mobile Mode (Bottom Tab Navigation)                  │
+│  ┌──────────────────────────────────────────────────┐ │
+│  │                  Active Tab Canvas               │ │
+│  └──────────────────────────────────────────────────┘ │
+│  ┌──────────────────────────────────────────────────┐ │
+│  │ [Home]   [Activity]   [Copilot]  [Goals]  [Dev]  │ │
+│  │ (Floating Bottom Pill Navigation)                │ │
+│  └──────────────────────────────────────────────────┘ │
+└────────────────────────────────────────────────────────┘
+```
 
-### 2. Transaction Webhook Relayer Simulator
-- Accessible via the **Quick Simulator Bar** at the bottom of the Desktop view or under the **Simulator Tab** in the Mobile view.
-- **Inputs**: Custom SMS Sender ID and Raw SMS Message text (contains fallback parser parsing).
-- **Execution**: Triggering "Trigger" or "Post SMS Relays" instantly:
-  - Parses the currency/amount using regex.
-  - Generates a fresh transaction item, calculating available balance and merchant tags.
-  - Inserts the new transaction into the ledger list dynamically.
-  - Updates the active SMS Pipeline log stream.
-  - Populates the formatted JSON Editor visualizer (`SIMULATOR_WEBHOOK.JSON`) with parsed payload outputs.
-  - Updates the terminal diagnostic logs.
+### Dashboard View Tabs
 
-### 3. Client Key Tokens Generator
-- Located under the **Device Access Center** (Desktop Settings) or the **Access Tab** (Mobile).
-- **Inputs**: Description naming input.
-- **Execution**: Clicking "Generate Token" creates a mock plain-text secret token `ft_live_...` with a COPY icon, and registers its SHA-256 hash checksum in the active credentials list.
+#### 🏠 Home View
+* **Financial Health Index**: Radial SVG target ring component illustrating safety health metrics (e.g. `86/100`).
+* **AI Summary Panel**: Dynamic contextual brief analyzing overall cash flows (e.g. *"You spent ₹420 less than usual today"*).
+* **Category Budget Overview**: Carousels displaying remaining budget limits on categories (Food, Shopping, Travel, Entertainment) colored dynamically based on threshold safety status (Sage, Amber, or Terracotta).
+* **Recent Activity & Subscriptions**: Previews the latest transactions and upcoming monthly recurring liabilities.
 
-### 4. Device Connection Node Registry
-- Pinned to the **Device Registration** panel inside the Transaction Pipeline.
-- Allows registration of new mobile devices (e.g., Pixel 9), adding them onto the connected devices status grid.
+#### 📈 Activity View
+* **Transaction Ledger**: Scrollable history grouped by date headers. Includes expandable detail panes with action buttons for custom tagging, attachments, and flags.
+* **Search & Filters**: Quick-filtering text bar targeting merchants and category schemas. Toggles filters between *Income*, *Expenses*, *Transfers*, and *Subscriptions*.
 
+#### 🤖 AI Copilot View
+* **Chat Console**: Multi-turn dialogue box mapping interactive AI insights.
+* **Quick Prompts**: Context buttons triggering popular queries (e.g. *"Can I afford a MacBook this month?"*).
+* **Rich Data Previews**: Inline tables and trend widgets generated as response extensions inside the message bubble flow.
+
+#### 🎯 Savings Goals View
+* **Target Grid**: Progress rings mapping accumulated amounts against total goal targets.
+* **Intelligent Tips**: Tailored advice highlighting necessary monthly savings parameters to meet selected dates.
+
+#### ⚙️ Profile & Developer console
+* **Biometrics Toggle**: Stores permission states to bypass login prompts on startup.
+* **SMS Gateway Health**: Visual monitoring metrics mapping pipeline telemetry.
+* **Hashed API Key Manager**: Allows live generation of API secret keys (`ft_live_...`). Displays key details alongside revoking utility calls that trigger backend database removal.
+* **Webhook Simulator**: Integrated webhook debugger allowing developers to formulate mock SMS transaction strings, trigger incoming webhook posts, parse values, and monitor pipeline performance logs directly inside the browser.
+
+---
+
+## 📡 Live Integration & Sync Logic
+
+The frontend utilizes a robust API integration service that syncs simulated state models with real endpoints when connected.
+
+### Local State Fallbacks
+If the core Spring Boot backend is offline or unreachable, the application falls back gracefully:
+1. **Mock Data Engine**: Seamlessly falls back to local data tables for all views, enabling interactive demonstrations of all features.
+2. **Interactive Simulators**: Runs regex-based transaction parsing locally to populate transaction arrays, updates mock balance estimates, and modifies chart inputs in real time.
+
+### Real Backend Synced Endpoints
+When backend configurations are active, client actions target:
+* `POST /api/v1/auth/login`: Validates user profile credentials, returning JWT access tokens.
+* `GET /api/v1/settings`: Pulls core limits, budgets, and user details.
+* `GET /api/v1/transactions`: Synchronizes paginated ledger entries.
+* `POST /api/v1/settings/api-keys`: Registers encrypted SHA-256 tokens for native device synchronization.
+* `DELETE /api/v1/settings/api-keys/{id}`: Revokes active access credentials.
+
+---
+
+## 🛠️ Verification & Verification Commands
+
+To verify and run the frontend application:
+
+### Run Development Server
+```bash
+cd frontend
+npm install
+npm run dev
+```
+Open `http://localhost:3000` to inspect the web client.
+
+### Run Production Static Export
+```bash
+npm run build
+```
+This builds and exports static assets into `out/` ready to be bridged by Capacitor.
+
+### Synchronize Capacitor Android Wrapper
+```bash
+npx cap sync
+npx cap open android
+```
+This copies static artifacts into the Android studio project located under `frontend/android/` for native app compiling.
