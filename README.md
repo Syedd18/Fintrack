@@ -1,167 +1,676 @@
-# FinTrack AI — Production-Grade Real-Time UPI Tracking & Finance Intelligence
+# FinTrack AI
+### Production-Grade Real-Time UPI Tracking, Expense Intelligence & Personal Finance Analytics Platform
 
-FinTrack AI is a SaaS-quality, end-to-end automated personal finance monitoring platform. It intercepts banking SMS transaction alerts on a user's Android phone, routes them securely via webhook, parses them in real time using Spring Boot and Gemini AI, updates a Next.js 15 dashboard, and pushes instant notifications to Telegram.
+![Java](https://img.shields.io/badge/Java-17-orange)
+![Spring Boot](https://img.shields.io/badge/Spring_Boot-3-green)
+![Next.js](https://img.shields.io/badge/Next.js-15-black)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-blue)
+![Redis](https://img.shields.io/badge/Redis-Cache-red)
+![Docker](https://img.shields.io/badge/Docker-Containerized-blue)
+![Android](https://img.shields.io/badge/Android-Kotlin-brightgreen)
 
 ---
 
-## 🏗️ Platform Architecture
+# Overview
 
-The platform utilizes a modern, distributed architecture for high reliability, offline persistence, and observability.
+FinTrack AI is a production-ready personal finance intelligence platform that automatically captures banking transaction SMS alerts from Android devices and converts them into structured financial records.
+
+Unlike traditional expense trackers that require manual entry, FinTrack AI creates a fully automated financial monitoring pipeline by:
+
+- Detecting incoming banking SMS alerts
+- Extracting transaction details
+- Categorizing expenses using AI
+- Updating dashboards in real time
+- Sending Telegram notifications
+- Maintaining a complete financial ledger
+
+The platform is designed around reliability, security, observability, scalability, and offline-first principles.
+
+---
+
+# Why FinTrack AI?
+
+Managing personal finances often requires manually recording expenses or exporting bank statements. FinTrack AI eliminates this friction by automatically tracking transactions the moment they occur.
+
+## Key Benefits
+
+- Zero manual expense entry
+- Real-time transaction monitoring
+- AI-powered categorization
+- Multi-bank compatibility
+- Offline transaction persistence
+- Live analytics dashboard
+- Instant Telegram notifications
+- Production-grade monitoring stack
+
+---
+
+# Platform Architecture
 
 ```mermaid
 graph TD
     subgraph Client Layer
-        A[Android Device: SMS Received] -->|SmsReceiver intercepts| B[Local Encrypted DB / SQLite Queue]
-        B -->|WorkManager Sync| C[Nginx API Gateway / Port 80]
+        A[Android Device: SMS Received] -->|BroadcastReceiver| B[Encrypted SQLite Queue]
+        B -->|WorkManager Sync| C[Nginx API Gateway]
     end
 
-    subgraph Service Mesh
-        C -->|Reverse Proxy /api/*| D[Spring Boot Backend / Port 8080]
-        C -->|Proxy /*| I[Next.js Analytics Client / Port 3000]
+    subgraph Service Layer
+        C --> D[Spring Boot Backend]
+        C --> I[Next.js Dashboard]
     end
 
-    subgraph Data & Cache Layer
-        D -->|Validate API Key| E[Redis Cache / Token Store]
-        D -->|Persist Transaction| F[PostgreSQL DB / Flyway Migrations]
+    subgraph Data Layer
+        D --> E[Redis Cache]
+        D --> F[PostgreSQL]
     end
 
-    subgraph External Integrations
-        D -->|Uncategorized SMS| G[Google Gemini AI / Parsing Engine]
-        D -->|Instant Receipt Alert| H[Telegram Bot API]
+    subgraph AI & Integrations
+        D --> G[Google Gemini]
+        D --> H[Telegram Bot]
     end
 
-    subgraph Observability Suite
-        J[Prometheus / Port 9090] -->|Scrape Actuator /metrics| D
-        K[Grafana / Port 3001] -->|Visualize System Health| J
+    subgraph Monitoring
+        J[Prometheus]
+        K[Grafana]
+        J --> D
+        K --> J
     end
 ```
 
 ---
 
-## 📁 Repository Structure
+# System Workflow
 
 ```text
-fintrack-ai/
-├── android/            # Native Android SMS Collector client app
-│   ├── app/            # Android app source code (Kotlin)
-│   └── README.md       # Android client setup & configuration instructions
-├── backend/            # Spring Boot 3 Java backend REST API engine
-│   ├── src/            # Java backend components (Controllers, Services, Repositories, Entities)
-│   ├── Dockerfile      # Backend containerization file
-│   └── pom.xml         # Maven dependencies
-├── db/                 # Database schema migrations
-│   └── migration/      # Flyway SQL migration script files
-├── devops/             # Orchestration & local service configurations
-│   ├── nginx/          # Reverse proxy routing parameters
-│   ├── prometheus/     # Metric scraping configurations
-│   └── docker-compose.yml # Main compose topology configuration
-├── frontend/           # Next.js 15 Tailwind UI dashboard
-│   ├── src/            # React/Next.js dashboard page views & components
-│   ├── Dockerfile      # Frontend containerization file
-│   └── package.json    # Frontend dependency tree
-└── README.md           # Main platform documentation (This file)
+Incoming Banking SMS
+          │
+          ▼
+Android SMS Receiver
+          │
+          ▼
+Encrypted Local Queue
+          │
+          ▼
+Background Sync Service
+          │
+          ▼
+Spring Boot Webhook
+          │
+          ▼
+Transaction Parser
+      ┌───────────┐
+      │           │
+      ▼           ▼
+Regex Parser  Gemini AI
+      │           │
+      └─────┬─────┘
+            ▼
+      PostgreSQL
+            │
+     ┌──────┴──────┐
+     ▼             ▼
+Telegram      Dashboard
+Notifications  Analytics
 ```
 
 ---
 
-## ⚡ Core Component Specifications
+# Core Features
 
-### 1. Spring Boot 3 Core Backend API
-- **Technology stack**: Java 17, Spring Boot 3, Spring Security (JWT / API Key authorization), Hibernate JPA, Spring Actuator.
-- **Webhook Engine**: Receives payload posts from the Android client. Authorizes uploads via client-generated secure SHA-256 API Key hashes.
-- **Intelligent Parser**: Uses a regex parser fallback system combined with **Google Gemini Pro Flash** API integration to parse complex banking notifications into structured database models.
-- **Telegram Bot Integration**: Generates and pushes rich expense notification receipts directly to the user's private Telegram chat or channel.
+## Automated Expense Tracking
 
-### 2. Next.js 15 Dashboard
-- **Technology stack**: React 19, Next.js 15, Tailwind CSS, Lucide Icons, Recharts.
-- **Overview Dashboard**: Displays real-time estimates of account balances, monthly budgets, and interactive trend lines showing running ledger balances.
-- **Interactive Webhook Simulator**: Built-in visual SMS webhook simulator, letting developers test the ingress pipeline directly from the UI without an emulator.
-- **Gateway Manager**: UI manager for registering, hashing, and revoking API keys for Android devices.
+The Android client continuously monitors incoming banking SMS notifications and automatically extracts financial information.
 
-### 3. Android SMS Collector Client
-- **Technology stack**: Native Kotlin, Android SDK, WorkManager, SQLCipher, BroadcastReceiver.
-- **Reliable SMS Interceptor**: BroadcastReceiver hooks into `RECEIVE_SMS` system broadcasts, filtering sender IDs (e.g., `HDFCBank`, `SBI`) to isolate transactions.
-- **Offline Resilience**: Saves transactions locally in SQLCipher (encrypted database). Automatically pushes backlog transaction queues when network states are validated by WorkManager.
-- **Power Management**: Requests battery optimization exemptions to bypass OS-level Doze cycles, guaranteeing 24/7 background availability.
+Supported transactions:
 
-### 4. Database Schema
-Managed via **Flyway Migrations** on a **PostgreSQL 16** database.
-- `users`: Core profile configuration & credentials.
-- `user_settings`: User dashboard settings, monthly budgets, currencies, and Telegram channel configs.
-- `transactions`: Detailed ledger records including merchant, category, amount, bank, reference codes, and balances.
-- `api_keys`: Access tokens hashes for device validation.
-- `sms_logs`: Logs raw intercepted SMS text, parsing performance, and parser confidence indicators.
+- UPI Payments
+- Card Payments
+- ATM Withdrawals
+- Salary Credits
+- Refunds
+- IMPS Transfers
+- NEFT Transfers
+- RTGS Transfers
+- EMI Deductions
+- Interest Credits
+
+No manual intervention required.
 
 ---
 
-## 🚀 Getting Started
+## AI-Powered SMS Understanding
 
-### Prerequisites
-- [Docker](https://www.docker.com/) & [Docker Compose](https://docs.docker.com/compose/)
-- Google Gemini API Key
-- Telegram Bot Token & Chat ID (Optional but recommended)
+Different banks send notifications in different formats.
 
-### Quick Start Deployment
+FinTrack AI uses a hybrid parsing engine.
 
-1. **Clone the Repository**:
-   ```bash
-   git clone <repository_url> fintrack-ai
-   cd fintrack-ai
-   ```
+### Layer 1: Regex Parser
 
-2. **Configure Environment Variables**:
-   Create a `.env` file inside the `devops/` directory with the following variables:
-   ```env
-   DATABASE_PASSWORD=your_postgres_password
-   JWT_SECRET=your_32_character_jwt_secret
-   TELEGRAM_BOT_TOKEN=your_telegram_bot_token
-   TELEGRAM_CHAT_ID=your_telegram_channel_or_chat_id
-   GEMINI_API_KEY=your_google_gemini_api_key
-   ```
+Extracts:
 
-3. **Spin up the Services**:
-   In the `devops/` directory, launch the entire container swarm:
-   ```bash
-   cd devops
-   docker-compose up --build -d
-   ```
-   This will build and start:
-   - PostgreSQL (port `5432`)
-   - Redis Cache (port `6379`)
-   - Spring Boot Core App (port `8080`)
-   - Next.js 15 Dashboard App (port `3000`)
-   - Nginx Reverse Proxy (port `80`)
-   - Prometheus Metric Scraper (port `9090`)
-   - Grafana Visualization Engine (port `3001` - default credentials: `admin`/`admin`)
+- Amount
+- Merchant
+- Bank
+- Transaction Type
+- Balance
+- Reference Number
 
-4. **Verify Application Ingress**:
-   - Access the Next.js Web Dashboard: `http://localhost`
-   - Access Core API Swagger Docs (if enabled): `http://localhost/api/swagger-ui.html`
-   - Access Grafana Metrics: `http://localhost:3001`
+### Layer 2: Gemini AI
 
----
+For messages with low parsing confidence:
 
-## 📡 Webhook Payload Format
+Input:
 
-The Android client submits parsed or raw payloads via HTTP POST. 
+```text
+Rs 239 paid to Zomato via UPI from SBI A/C XX2345
+```
 
-**Endpoint**: `POST http://localhost/api/webhook/sms`  
-**Headers**:
-- `X-API-KEY`: `<your-generated-api-key>`
-- `Content-Type`: `application/json`
+Output:
 
-**Body**:
 ```json
 {
-  "sender": "HDFCBank",
-  "text": "Alert: You've made a txn of Rs. 350.00 at Swiggy on 10-06-2026 21:00:00 using HDFC Bank Card. Avl Bal: Rs.24217.32. Ref: UPI7483012",
-  "timestamp": 1781107800000
+  "amount": 239,
+  "merchant": "Zomato",
+  "category": "Food",
+  "bank": "SBI",
+  "paymentMethod": "UPI"
 }
 ```
 
 ---
 
-## 🔒 Security Best Practices
-- **TLS/SSL Encryption**: All inbound device transactions should be served over HTTPS.
-- **HMAC/Token Hashing**: Device API keys are never stored in plain text. They are hashed using SHA-256 upon generation, ensuring that even in case of database leakage, client connections cannot be compromised.
-- **AES-256 Storage**: The Android app secures the local transaction queue using SQLCipher, protecting device records if the phone is physically lost or compromised.
+## Real-Time Analytics Dashboard
+
+Built with Next.js 15 and React 19.
+
+Dashboard includes:
+
+- Monthly Expenses
+- Daily Spending Trends
+- Category Breakdown
+- Budget Utilization
+- Bank Distribution
+- Cash Flow Analytics
+- Expense Heatmaps
+- Balance Tracking
+- Recent Transactions
+
+---
+
+## Telegram Receipt Notifications
+
+Every processed transaction can generate an instant Telegram notification.
+
+Example:
+
+```text
+💸 Expense Recorded
+
+Merchant: Swiggy
+Amount: ₹350
+Category: Food
+Bank: HDFC
+
+Available Balance:
+₹24,217
+
+Reference:
+UPI7483012
+```
+
+---
+
+# Repository Structure
+
+```text
+fintrack-ai/
+├── android/
+│   ├── app/
+│   └── README.md
+│
+├── backend/
+│   ├── src/
+│   ├── Dockerfile
+│   └── pom.xml
+│
+├── db/
+│   └── migration/
+│
+├── devops/
+│   ├── nginx/
+│   ├── prometheus/
+│   └── docker-compose.yml
+│
+├── frontend/
+│   ├── src/
+│   ├── Dockerfile
+│   └── package.json
+│
+└── README.md
+```
+
+---
+
+# Technology Stack
+
+## Backend
+
+| Technology | Purpose |
+|------------|----------|
+| Java 17 | Runtime |
+| Spring Boot 3 | Backend API |
+| Spring Security | Authentication |
+| Hibernate JPA | ORM |
+| Flyway | Database Migration |
+| PostgreSQL 16 | Database |
+| Redis | Cache |
+| Spring Actuator | Metrics |
+
+---
+
+## Frontend
+
+| Technology | Purpose |
+|------------|----------|
+| Next.js 15 | Frontend Framework |
+| React 19 | UI Library |
+| Tailwind CSS | Styling |
+| Recharts | Analytics |
+| Lucide Icons | Icons |
+
+---
+
+## Android
+
+| Technology | Purpose |
+|------------|----------|
+| Kotlin | Native Android |
+| BroadcastReceiver | SMS Capture |
+| WorkManager | Background Sync |
+| SQLCipher | Encrypted Storage |
+
+---
+
+## DevOps
+
+| Technology | Purpose |
+|------------|----------|
+| Docker | Containerization |
+| Docker Compose | Orchestration |
+| Nginx | Reverse Proxy |
+| Prometheus | Metrics |
+| Grafana | Visualization |
+
+---
+
+# Database Schema
+
+## users
+
+Stores account information.
+
+```sql
+users
+```
+
+Fields:
+
+```text
+id
+name
+email
+password_hash
+created_at
+updated_at
+```
+
+---
+
+## transactions
+
+Stores financial records.
+
+```sql
+transactions
+```
+
+Fields:
+
+```text
+id
+user_id
+amount
+merchant
+category
+bank
+transaction_type
+reference_number
+available_balance
+timestamp
+created_at
+```
+
+---
+
+## api_keys
+
+Stores hashed device authentication keys.
+
+```sql
+api_keys
+```
+
+Fields:
+
+```text
+id
+user_id
+key_hash
+device_name
+created_at
+last_used
+```
+
+---
+
+## sms_logs
+
+Stores parser diagnostics.
+
+```sql
+sms_logs
+```
+
+Fields:
+
+```text
+id
+raw_sms
+parser_used
+confidence
+processing_time
+created_at
+```
+
+---
+
+# API Documentation
+
+## Submit SMS
+
+### Request
+
+```http
+POST /api/webhook/sms
+```
+
+Headers:
+
+```http
+X-API-KEY: your_api_key
+Content-Type: application/json
+```
+
+Body:
+
+```json
+{
+  "sender": "HDFCBank",
+  "text": "Alert: You've made a txn of Rs. 350.00 at Swiggy.",
+  "timestamp": 1781107800000
+}
+```
+
+Response:
+
+```json
+{
+  "success": true,
+  "transactionId": 123,
+  "parsed": true
+}
+```
+
+---
+
+## Get Transactions
+
+```http
+GET /api/transactions
+```
+
+Response:
+
+```json
+[
+  {
+    "merchant": "Swiggy",
+    "amount": 350,
+    "category": "Food"
+  }
+]
+```
+
+---
+
+## Analytics Summary
+
+```http
+GET /api/analytics/summary
+```
+
+Response:
+
+```json
+{
+  "monthlyExpense": 12450,
+  "foodExpense": 4200,
+  "transportExpense": 1800
+}
+```
+
+---
+
+# Security Architecture
+
+## Device Authentication
+
+Each Android device receives a unique API key.
+
+Workflow:
+
+```text
+Generate API Key
+        │
+        ▼
+SHA-256 Hash
+        │
+        ▼
+Store Hash Only
+```
+
+Raw keys are never stored.
+
+---
+
+## Encryption
+
+### Android Storage
+
+```text
+AES-256 SQLCipher Encryption
+```
+
+### Network
+
+```text
+HTTPS
+TLS 1.3
+```
+
+---
+
+## Rate Limiting
+
+Redis-based throttling.
+
+Example:
+
+```text
+100 Requests / Minute / Device
+```
+
+---
+
+# Observability
+
+## Spring Actuator Metrics
+
+Collected metrics include:
+
+- JVM Memory
+- CPU Usage
+- API Latency
+- Request Count
+- Error Rates
+- Database Health
+- Redis Health
+
+---
+
+## Prometheus
+
+Metrics endpoint:
+
+```http
+/actuator/prometheus
+```
+
+---
+
+## Grafana Dashboards
+
+Visualizations:
+
+- Request Throughput
+- Transaction Volume
+- API Response Times
+- JVM Health
+- Database Metrics
+- Cache Performance
+
+---
+
+# Quick Start
+
+## Clone Repository
+
+```bash
+git clone https://github.com/yourusername/fintrack-ai.git
+cd fintrack-ai
+```
+
+---
+
+## Environment Variables
+
+Create:
+
+```bash
+devops/.env
+```
+
+```env
+DATABASE_PASSWORD=postgres_password
+JWT_SECRET=your_jwt_secret
+TELEGRAM_BOT_TOKEN=telegram_bot_token
+TELEGRAM_CHAT_ID=telegram_chat_id
+GEMINI_API_KEY=gemini_api_key
+```
+
+---
+
+## Start Platform
+
+```bash
+cd devops
+docker-compose up --build -d
+```
+
+---
+
+## Available Services
+
+| Service | URL |
+|----------|------|
+| Dashboard | http://localhost |
+| Backend API | http://localhost/api |
+| Swagger Docs | http://localhost/api/swagger-ui.html |
+| Grafana | http://localhost:3001 |
+| Prometheus | http://localhost:9090 |
+
+---
+
+# Performance Targets
+
+| Metric | Target |
+|----------|----------|
+| API Latency | <150ms |
+| SMS Processing | <500ms |
+| Notification Delivery | <5s |
+| Dashboard Load | <2s |
+| Availability | 99.9% |
+| Parser Accuracy | >95% |
+
+---
+
+# Roadmap
+
+## Version 2.0
+
+- AI Budget Recommendations
+- Subscription Detection
+- Recurring Expense Prediction
+- Monthly Financial Reports
+- Multi-Bank Support
+- Smart Spending Insights
+
+## Version 3.0
+
+- Investment Tracking
+- Credit Score Monitoring
+- Tax Planning Assistant
+- OCR Receipt Scanner
+- Voice Assistant Integration
+
+---
+
+# Skills Demonstrated
+
+This project showcases expertise in:
+
+- Full Stack Development
+- Spring Boot Architecture
+- Next.js 15 Development
+- Android Native Development
+- PostgreSQL Database Design
+- Redis Caching
+- Docker & DevOps
+- Reverse Proxy Configuration
+- API Security
+- AI Integration
+- Real-Time Data Pipelines
+- Monitoring & Observability
+- SaaS Product Engineering
+
+---
+
+## License
+
+MIT License
+
+---
+
+### FinTrack AI transforms raw banking SMS messages into actionable financial intelligence through a secure, scalable, AI-powered platform designed for modern personal finance management.
+
+⭐ If you find this project useful, consider giving it a star.
